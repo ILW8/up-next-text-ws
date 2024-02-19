@@ -1,0 +1,29 @@
+<html lang="en-us">
+<head>
+    <title>up next status</title>
+    <script src="/reconnecting-websocket.min.js"></script>
+</head>
+<body>
+<span id="status-text" style="font-size: 64px"></span>
+<script>
+    const displaySpan = document.getElementById("status-text");
+    const socket = new ReconnectingWebSocket('ws://127.0.0.1:8001/');
+    socket.onopen = () => {
+        console.log('Successfully Connected');
+    };
+    socket.onclose = event => {
+        console.log('Socket Closed Connection: ', event);
+        socket.send('Client Closed!');
+    };
+    socket.onerror = error => {
+        console.log('Socket Error: ', error);
+    };
+    socket.onmessage = event => {
+        const newStatusText = event.data;
+        console.log(newStatusText);
+        displaySpan.textContent = newStatusText;
+    }
+
+</script>
+</body>
+</html>

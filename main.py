@@ -14,21 +14,16 @@ dotenv.load_dotenv()
 
 
 current_state = ""
+connected = set()
 
 
 async def handler(websocket: websockets.WebSocketServerProtocol):
     global current_state
     await websocket.send(current_state)
+    connected.add(websocket)
     async for message in websocket:
         current_state = message
         await websocket.send(current_state)
-
-
-# async def ws_main():
-#     # async with websockets.serve(handler, "", 8001):
-#     #     await asyncio.Future()  # run forever
-#     server = await websockets.serve(handler, '', 8001)
-#     await server.wait_closed()
 
 
 if __name__ == "__main__":
@@ -49,8 +44,11 @@ if __name__ == "__main__":
         description="update status text on stream",
         guild=discord.Object(id=1119774583562711063)
     )
-    async def first_command(interaction):
-        await interaction.response.send_message("Hello!")
+    async def update_status_discord(interaction, new_status: str):
+        global current_state
+        current_state = new_status
+        websockets.broadcast(connected, current_state)
+        await interaction.response.send_message(f"published new status text to: `{new_status}`")
 
 
     client.run(os.environ.get("DISCORD_TOKEN"))
